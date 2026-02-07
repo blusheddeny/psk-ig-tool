@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PSK Instagram Post Generator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
@@ -32,7 +32,7 @@
             background: white;
             padding: 25px;
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             height: fit-content;
         }
 
@@ -60,11 +60,9 @@
             color: #555;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-
         }
 
         /*template switcher*/
-
         .template-switcher {
             display: flex;
             gap: 10px;
@@ -90,7 +88,6 @@
         }
 
         /*alignment btns*/
-
         .align-toolbar {
             display: flex;
             background: #f0f2f5;
@@ -116,7 +113,6 @@
         }
 
         /*inputs*/
-
         input[type="file"] {
             width: 100%;
             padding: 8px;
@@ -150,7 +146,6 @@
         }
 
         /*PREVIEW AREA*/
-
         .preview-wrapper {
             display: flex;
             flex-direction: column;
@@ -161,7 +156,6 @@
         #post-canvas {
             width: 432px;
             height: 540px;
-            /*ratio scaled down*/
             background: var(--dark);
             position: relative;
             overflow: hidden;
@@ -171,15 +165,14 @@
         }
 
         /* LAYOUTS */
-
-        /* common elements*/
         .person-img {
             position: absolute;
             bottom: 0;
-            left: 0;
-            width: 85%;
-            height: auto;
-            pointer-events: none;
+            width: 80%;
+            max-width: 400px;
+            z-index: 1;
+            transition: all 0.4s ease-out;
+            cursor: grab; /* Añadido para indicar que se puede mover */
         }
 
         .text-layer {
@@ -195,7 +188,6 @@
         }
 
         /* editable text styles*/
-
         [contenteditable]:focus {
             outline: 2px dashed rgba(255, 255, 255, 0.5);
             background: rgba(0, 0, 0, 0.1);
@@ -210,39 +202,29 @@
         .logo {
             position: absolute;
             z-index: 20;
-            /* Ensures it stays on top */
             width: 200px;
-            /* Standard width */
             height: auto;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            /* Smooth movement */
         }
 
         /* --- STYLE 1: CLASSIC (Dark Theme) --- */
-        /* Needs to be White and Left-Aligned */
         .layout-classic .logo {
             top: 40px;
             left: 30px;
-            filter: brightness(0) invert(1);
+            /* ELIMINADO EL FILTER CSS: Lo haremos con JS */
             opacity: 0.95;
         }
 
         /* --- STYLE 2: MODERN (Light Theme) --- */
-        /* Needs to be Centered inside a White Box */
         .layout-modern .logo {
             left: 50%;
             transform: translateX(-50%);
             top: 0;
-
-            /* The "Pill" Box Look */
             background: white;
             padding: 12px 25px;
             border-radius: 0 0 16px 16px;
-            /* Round only bottom corners */
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            /* Soft shadow */
             width: 180px;
-            /* Slightly smaller to fit the box nicely */
         }
 
         .headline {
@@ -258,7 +240,6 @@
             padding: 2px 8px;
         }
 
-        /* highlight style*/
         .subline {
             font-size: 20px;
             opacity: 0.9;
@@ -294,7 +275,6 @@
 
         .layout-classic .extra-card {
             display: none;
-            /*hide card in templ 1*/
         }
 
         /* TEMPLATE 2*/
@@ -312,9 +292,6 @@
         }
 
         .layout-modern .subline {
-            color: #555;
-            text-align: center;
-            width: 100%;
             display: none;
         }
 
@@ -322,9 +299,6 @@
             margin: 0 auto 20px auto;
             order: 5;
         }
-
-        /*move cta to bottom*/
-
 
         /*img extra only for templ 2*/
         .extra-card {
@@ -338,61 +312,16 @@
             transform-origin: top left;
         }
 
-        .card-row {
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-            margin-bottom: 8px;
-        }
-
-        .card-label {
-            font-size: 10px;
-            color: #888;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .card-val {
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--dark);
-        }
-
-        .card-highlight {
-            background: #e6f4ea;
-            color: #1e7e34;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            margin-top: 5px;
-        }
-
         /*alignment utilities*/
-        .text-left .headline,
-        .text-left .subline {
-            text-align: left;
-        }
-
-        .text-center .headline,
-        .text-center .subline {
-            text-align: center;
-        }
-
-        .text-right .headline,
-        .text-right .subline {
-            text-align: right;
-            margin-left: auto;
-        }
+        .text-left .headline, .text-left .subline { text-align: left; }
+        .text-center .headline, .text-center .subline { text-align: center; }
+        .text-right .headline, .text-right .subline { text-align: right; margin-left: auto; }
 
         /*modal*/
         #cropper-modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.85);
             z-index: 100;
             align-items: center;
@@ -413,79 +342,32 @@
             overflow: hidden;
         }
 
-        /* --- CONFIGURACIÓN BASE DE LA PERSONA --- */
-.person-img {
-    position: absolute;
-    bottom: 0;
-    width: 80%;       /* Tamaño grande */
-    max-width: 400px;
-    z-index: 1;       /* Detrás del texto interactivo, pero visible */
-    transition: all 0.4s ease-out; /* Animación suave al moverse */
-}
+        /* --- ESCENARIOS DE PERSONA --- */
+        .side-right .person-img { right: -10%; left: auto; transform: scaleX(1); }
+        .side-right .text-layer { padding-right: 40% !important; padding-left: 40px; text-align: left; }
+        .side-left .person-img { left: -10%; right: auto; transform: scaleX(-1); }
+        .side-left .text-layer { padding-left: 45% !important; padding-right: 40px; text-align: right; }
 
-/* --- ESCENARIO A: PERSONA A LA DERECHA (Default) --- */
-.side-right .person-img {
-    right: -10%;      /* Se asoma desde la derecha */
-    left: auto;
-    transform: scaleX(1); /* Imagen normal */
-}
-/* El texto se "protege" dejando espacio a la derecha */
-.side-right .text-layer {
-    padding-right: 40% !important; /* Deja el 40% del espacio libre para la foto */
-    padding-left: 40px;
-    text-align: left; /* Sugerencia visual */
-}
-
-/* --- ESCENARIO B: PERSONA A LA IZQUIERDA --- */
-.side-left .person-img {
-    left: -10%;       /* Se asoma desde la izquierda */
-    right: auto;
-    transform: scaleX(-1); /* 🪄 ESPEJO: Volteamos la imagen para que mire al centro */
-}
-/* El texto se "protege" dejando espacio a la izquierda */
-.side-left .text-layer {
-    padding-left: 45% !important; /* Deja espacio a la izquierda */
-    padding-right: 40px;
-    text-align: right; /* Sugerencia visual */
-}
-/* --- CORRECCIÓN PARA LAYOUT CLASSIC --- */
-
-/* 1. Texto más pequeño SOLO si la persona está ocupando espacio */
-.layout-classic.side-left .headline,
-.layout-classic.side-right .headline {
-    font-size: 26px; /* Bajamos de 38px a 26px para que quepa en la columna */
-    margin-top: 60px; /* Ajuste para que no pegue arriba */
-}
-
-/* 2. Evitar que el precio "100.000 €" se parta en dos líneas */
-.headline span {
-    display: inline-block; /* Mantiene la caja unida */
-    white-space: nowrap;   /* Prohíbe partir la línea dentro del precio */
-    font-size: 0.9em;      /* Un pelín más pequeño para asegurar que entre */
-}
-
-/* 3. Ajuste de márgenes para que el botón no se salga por abajo */
-.layout-classic.side-left .subline,
-.layout-classic.side-right .subline {
-    font-size: 16px;       /* Subtítulo un poco más pequeño */
-    margin-bottom: 15px;   /* Menos espacio antes del botón */
-}
-
-/* 4. Ajustar el padding para dar un poco más de aire al texto */
-.layout-classic.side-left .text-layer {
-    padding-left: 45% !important; /* Espacio para la foto a la izq */
-    padding-right: 20px;          /* Margen derecho seguro */
-}
-
-.layout-classic.side-right .text-layer {
-    padding-right: 45% !important; /* Espacio para la foto a la der */
-    padding-left: 20px;            /* Margen izquierdo seguro */
-}
+        /* --- CORRECCIÓN PARA LAYOUT CLASSIC --- */
+        .layout-classic.side-left .headline, .layout-classic.side-right .headline {
+            font-size: 26px; margin-top: 60px;
+        }
+        .headline span { display: inline-block; white-space: nowrap; font-size: 0.9em; }
+        .layout-classic.side-left .subline, .layout-classic.side-right .subline {
+            font-size: 16px; margin-bottom: 15px;
+        }
     </style>
 </head>
 
+<body>
 <div class="controls">
     <div style="display:flex; flex-flow: column; align-items:center; gap:10px; margin-bottom:20px;">
+         <label>1. Add logo</label>
+        <input type="file" id="upload-logo" accept="image/*" style="display:none;">
+        <img id="logo-preview-btn" src="" 
+             style="width: 150px; cursor:pointer; border: 2px dashed #ccc; padding: 5px;"
+             onclick="document.getElementById('upload-logo').click()">
+             
         <h2>Post Generator</h2>
     </div>
 
@@ -506,19 +388,20 @@
         <label>Aditional Img(Template 2)</label>
         <input type="file" id="uploadExtra" accept="image/*">
     </div>
+    
     <div class="control-group">
         <label>3. Texto y Estilo</label>
         <div class="align-toolbar">
             <button class="align-btn" onclick="setAlignment('left')"><i class="fas fa-align-left"></i></button>
             <button class="align-btn" onclick="setAlignment('center')"><i class="fas fa-align-center"></i></button>
             <button class="align-btn" onclick="setAlignment('right')"><i class="fas fa-align-right"></i></button>
-
             <button class="align-btn" onmousedown="event.preventDefault(); toggleHighlight()"
                 title="Resaltar texto seleccionado" style="color: var(--primary); font-weight:bold;">
                 <i class="fas fa-highlighter"></i>
             </button>
         </div>
     </div>
+    
     <div class="control-group">
         <label>4. Posición de Persona</label>
         <div style="display:flex; gap:10px;">
@@ -531,25 +414,19 @@
         </div>
     </div>
 
-
-
     <button class="btn btn-primary" onclick="exportPost()">
         <i class="fab fa-instagram"></i> Share & Download
     </button>
-    <p style="font-size:12px; color:#999; text-align:center; margin-top:10px;">
-        ℹ️ Text, Zahlen und Farben sind direkt im Bild bearbeitbar.
-    </p>
 </div>
 
 <div class="preview-wrapper">
     <div id="post-canvas" class="layout-classic text-left">
-        <img src="./logo.png" class="logo" alt="">
+        <img id="logo-img" class="logo" src="" style="display:none;">
         <img id="person-img" class="person-img" src="" style="display:none;">
         <div class="text-layer">
             <div class="headline" contenteditable="true" data-limit="50">
                 Sie verdienen mehr als <span style="color:var(--primary)">100.000 €</span>?
             </div>
-
             <div class="subline" contenteditable="true">
                 Erfahren Sie, wie Sie Ihre Steuerlast legal auf unter 30% senken.
             </div>
@@ -560,7 +437,6 @@
                 Kostenlos berechnen ↓
             </div>
         </div>
-
     </div>
 </div>
 
@@ -583,35 +459,85 @@
 <script>
     // --- VARIABLES GLOBALES ---
     let cropper;
+    let originalLogoUrl = ""; // Guarda la URL del logo rojo original
+    let whiteLogoCache = "";  // Guarda la versión blanca generada
+
     const canvas = document.getElementById('post-canvas');
     const upload = document.getElementById('upload');
     const modal = document.getElementById('cropper-modal');
     const cropperImg = document.getElementById('cropper-img');
     const finalImg = document.getElementById('person-img');
     
-    // CORRECCIÓN: Definir estas variables que faltaban
-    const uploadExtra = document.getElementById('uploadExtra'); // Faltaba definir esto
+    const uploadExtra = document.getElementById('uploadExtra');
     const extraImg = document.getElementById('extra-img');
     
-    // NUEVO: Variables para el logo
+    // Logo variables
     const uploadLogo = document.getElementById('upload-logo');
     const logoImg = document.getElementById('logo-img');
     const logoPreviewBtn = document.getElementById('logo-preview-btn');
 
-    // --- 1. LOGIC: UPLOAD LOGO (Fixes Security Error) ---
+    // --- 1. LOGIC: UPLOAD LOGO ---
     if(uploadLogo) {
         uploadLogo.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
                 const url = URL.createObjectURL(file);
-                // Actualiza el logo en el canvas
-                logoImg.src = url;
-                logoImg.style.display = 'block';
-                // Actualiza la miniatura en el panel de control
+                
+                // 1. Guardar original
+                originalLogoUrl = url;
+                whiteLogoCache = ""; // Limpiar caché anterior
+                
+                // 2. Actualizar visuales
                 logoPreviewBtn.src = url;
-                logoPreviewBtn.style.border = 'none';
+                logoImg.style.display = 'block';
+                
+                // 3. Aplicar color según template actual
+                updateLogoColor();
             }
         });
+    }
+
+    // --- FUNCIÓN MÁGICA: PINTAR LOGO DE BLANCO ---
+    function updateLogoColor() {
+        if (!originalLogoUrl) return;
+
+        // Si es Classic -> Queremos logo BLANCO
+        if (canvas.classList.contains('layout-classic')) {
+            if (whiteLogoCache) {
+                logoImg.src = whiteLogoCache;
+            } else {
+                createWhiteLogo(originalLogoUrl, (whiteUrl) => {
+                    whiteLogoCache = whiteUrl;
+                    logoImg.src = whiteUrl;
+                });
+            }
+        } 
+        // Si es Modern -> Queremos logo ORIGINAL
+        else {
+            logoImg.src = originalLogoUrl;
+        }
+    }
+
+    function createWhiteLogo(url, callback) {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = url;
+        img.onload = () => {
+            const c = document.createElement('canvas');
+            c.width = img.width;
+            c.height = img.height;
+            const ctx = c.getContext('2d');
+            
+            // Dibujar original
+            ctx.drawImage(img, 0, 0);
+            
+            // Pintar de blanco manteniendo transparencia
+            ctx.globalCompositeOperation = 'source-in';
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, c.width, c.height);
+            
+            callback(c.toDataURL('image/png'));
+        };
     }
 
     // --- 2. LOGIC: PERSON UPLOAD & CROP ---
@@ -642,8 +568,7 @@
         upload.value = ''; 
     }
 
-    // --- 3. LOGIC: EXTRA IMAGE (TEMPLATE 2) ---
-    // CORRECCIÓN: Ahora verificamos si existe uploadExtra antes de usarlo
+    // --- 3. LOGIC: EXTRA IMAGE ---
     if (uploadExtra) {
         uploadExtra.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -654,7 +579,7 @@
         });
     }
 
-    // --- 4. LOGIC: TEMPLATES & LAYOUT ---
+    // --- 4. LOGIC: TEMPLATES ---
     function setTemplate(type) {
         canvas.classList.remove('layout-classic', 'layout-modern');
         document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
@@ -667,6 +592,9 @@
             canvas.classList.add('layout-modern');
             setAlignment('center');
         }
+        
+        // ¡IMPORTANTE! Actualizar color del logo al cambiar template
+        updateLogoColor();
     }
 
     function setAlignment(align) {
@@ -688,15 +616,12 @@
         }
     }
 
-    // --- 5. LOGIC: TEXT TOOLS ---
+    // --- 5. LOGIC: TEXT & EXPORT ---
     document.querySelectorAll('[contenteditable]').forEach(el => {
         el.addEventListener('input', function () {
             const limit = this.getAttribute('data-limit');
-            if (limit && this.innerText.length > limit) {
-                this.classList.add('limit-reached');
-            } else {
-                this.classList.remove('limit-reached');
-            }
+            if (limit && this.innerText.length > limit) this.classList.add('limit-reached');
+            else this.classList.remove('limit-reached');
         });
     });
 
@@ -704,25 +629,11 @@
         const selection = window.getSelection();
         if (!selection.rangeCount) return;
         const range = selection.getRangeAt(0);
-        const parent = range.commonAncestorContainer.nodeType === 1
-            ? range.commonAncestorContainer
-            : range.commonAncestorContainer.parentElement;
-
-        if (!parent.closest('.headline')) {
-            alert("⚠️ Solo puedes resaltar texto en el título.");
-            return;
-        }
-
         const span = document.createElement('span');
         span.style.color = 'var(--primary)';
-        try {
-            range.surroundContents(span);
-        } catch (e) {
-            alert("Selecciona un texto limpio (sin mezclar estilos).");
-        }
+        try { range.surroundContents(span); } catch (e) {}
     }
 
-    // --- 6. LOGIC: EXPORT ---
     async function exportPost() {
         const btn = document.querySelector('.btn-primary');
         const originalText = btn.innerHTML;
@@ -730,41 +641,26 @@
         btn.disabled = true;
 
         try {
-            // Importante: useCORS y allowTaint settings
             const canvasEl = await html2canvas(canvas, {
                 scale: 3,
                 useCORS: true, 
-                allowTaint: false, // Esto evita el error de seguridad si la imagen es válida
+                allowTaint: false,
                 backgroundColor: null
             });
 
             canvasEl.toBlob(async (blob) => {
-                if(!blob) throw new Error("Canvas is empty");
-                
-                const file = new File([blob], `Insta-Post-${Date.now()}.png`, { type: "image/png" });
-
+                if(!blob) throw new Error("Canvas empty");
+                const file = new File([blob], `PSK-Post-${Date.now()}.png`, { type: "image/png" });
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: 'New Post',
-                            text: 'Created with PSK Generator'
-                        });
-                    } catch (err) {
-                        if (err.name !== 'AbortError') console.error(err);
-                    } finally {
-                        downloadBlob(blob);
-                    }
+                    try { await navigator.share({ files: [file] }); } catch (e) {} finally { downloadBlob(blob); }
                 } else {
                     downloadBlob(blob);
                 }
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }, 'image/png');
-
         } catch (err) {
             alert("Error: " + err.message);
-            console.error(err);
             btn.innerHTML = originalText;
             btn.disabled = false;
         }
@@ -785,5 +681,4 @@
     setPersonSide('right');
 </script>
 </body>
-
 </html>
