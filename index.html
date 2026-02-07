@@ -172,7 +172,8 @@
             max-width: 400px;
             z-index: 1;
             transition: all 0.4s ease-out;
-            cursor: grab; /* Añadido para indicar que se puede mover */
+            cursor: grab;
+            /* Añadido para indicar que se puede mover */
         }
 
         .text-layer {
@@ -211,7 +212,6 @@
         .layout-classic .logo {
             top: 40px;
             left: 30px;
-            /* ELIMINADO EL FILTER CSS: Lo haremos con JS */
             opacity: 0.95;
         }
 
@@ -260,8 +260,10 @@
 
         /* template 1 classic*/
         .layout-classic {
-            background: linear-gradient(135deg, #001a4d 0%, #001233 100%);
+            background: var(--dark);
+            background: linear-gradient(135deg, var(--dark) 0%, #000000 100%);
         }
+
 
         .layout-classic .text-layer {
             justify-content: flex-start;
@@ -284,7 +286,7 @@
         }
 
         .layout-modern .headline {
-            color: white;
+            color: var(--light);
             font-size: 32px;
             margin-top: 80px;
             text-align: center;
@@ -313,15 +315,30 @@
         }
 
         /*alignment utilities*/
-        .text-left .headline, .text-left .subline { text-align: left; }
-        .text-center .headline, .text-center .subline { text-align: center; }
-        .text-right .headline, .text-right .subline { text-align: right; margin-left: auto; }
+        .text-left .headline,
+        .text-left .subline {
+            text-align: left;
+        }
+
+        .text-center .headline,
+        .text-center .subline {
+            text-align: center;
+        }
+
+        .text-right .headline,
+        .text-right .subline {
+            text-align: right;
+            margin-left: auto;
+        }
 
         /*modal*/
         #cropper-modal {
             display: none;
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(0, 0, 0, 0.85);
             z-index: 100;
             align-items: center;
@@ -342,343 +359,411 @@
             overflow: hidden;
         }
 
-        /* --- ESCENARIOS DE PERSONA --- */
-        .side-right .person-img { right: -10%; left: auto; transform: scaleX(1); }
-        .side-right .text-layer { padding-right: 40% !important; padding-left: 40px; text-align: left; }
-        .side-left .person-img { left: -10%; right: auto; transform: scaleX(-1); }
-        .side-left .text-layer { padding-left: 45% !important; padding-right: 40px; text-align: right; }
-
-        /* --- CORRECCIÓN PARA LAYOUT CLASSIC --- */
-        .layout-classic.side-left .headline, .layout-classic.side-right .headline {
-            font-size: 26px; margin-top: 60px;
+        /* --- person position --- */
+        .side-right .person-img {
+            right: -10%;
+            left: auto;
+            transform: scaleX(1);
         }
-        .headline span { display: inline-block; white-space: nowrap; font-size: 0.9em; }
-        .layout-classic.side-left .subline, .layout-classic.side-right .subline {
-            font-size: 16px; margin-bottom: 15px;
+
+        .side-right .text-layer {
+            padding-right: 40% !important;
+            padding-left: 40px;
+            text-align: left;
+        }
+
+        .side-left .person-img {
+            left: -10%;
+            right: auto;
+            transform: scaleX(-1);
+        }
+
+        .side-left .text-layer {
+            padding-left: 45% !important;
+            padding-right: 40px;
+            text-align: right;
+        }
+
+        /* --- fix LAYOUT CLASSIC letter too big--- */
+        .layout-classic.side-left .headline,
+        .layout-classic.side-right .headline {
+            font-size: 26px;
+            margin-top: 60px;
+        }
+
+        .headline span {
+            display: inline-block;
+            white-space: nowrap;
+            font-size: 0.9em;
+        }
+
+        .layout-classic.side-left .subline,
+        .layout-classic.side-right .subline {
+            font-size: 16px;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 
 <body>
-<div class="controls">
-    <div style="display:flex; flex-flow: column; align-items:center; gap:10px; margin-bottom:20px;">
-         <label>1. Add logo</label>
-        <input type="file" id="upload-logo" accept="image/*" style="display:none;">
-        <img id="logo-preview-btn" src="" 
-             style="width: 150px; cursor:pointer; border: 2px dashed #ccc; padding: 5px;"
-             onclick="document.getElementById('upload-logo').click()">
-             
-        <h2>Post Generator</h2>
-    </div>
+    <div class="controls">
+        <div style="display:flex; flex-flow: column; align-items:center; gap:10px; margin-bottom:20px;">
+            <label>1. Logo hinzufügen</label>
+            <input type="file" id="upload-logo" accept="image/*" style="display:none;">
+            <img id="logo-preview-btn" src=""
+                style="width: 150px; cursor:pointer; border: 2px dashed #ccc; padding: 5px;"
+                onclick="document.getElementById('upload-logo').click()">
 
-    <div class="control-group">
-        <label>1. Design Template</label>
-        <div class="template-switcher">
-            <button class="t-btn active" onclick="setTemplate('classic')">Classic Dark</button>
-            <button class="t-btn" onclick="setTemplate('modern')">Modern Card</button>
+            <h2>Post Generator</h2>
         </div>
-    </div>
 
-    <div class="control-group">
-        <label>2. Foto (Person)</label>
-        <input type="file" id="upload" accept="image/*">
-    </div>
-
-    <div class="control-group">
-        <label>Aditional Img(Template 2)</label>
-        <input type="file" id="uploadExtra" accept="image/*">
-    </div>
-    
-    <div class="control-group">
-        <label>3. Texto y Estilo</label>
-        <div class="align-toolbar">
-            <button class="align-btn" onclick="setAlignment('left')"><i class="fas fa-align-left"></i></button>
-            <button class="align-btn" onclick="setAlignment('center')"><i class="fas fa-align-center"></i></button>
-            <button class="align-btn" onclick="setAlignment('right')"><i class="fas fa-align-right"></i></button>
-            <button class="align-btn" onmousedown="event.preventDefault(); toggleHighlight()"
-                title="Resaltar texto seleccionado" style="color: var(--primary); font-weight:bold;">
-                <i class="fas fa-highlighter"></i>
-            </button>
-        </div>
-    </div>
-    
-    <div class="control-group">
-        <label>4. Posición de Persona</label>
-        <div style="display:flex; gap:10px;">
-            <button class="btn" onclick="setPersonSide('left')" style="margin:0; padding:10px;">
-                <i class="fas fa-arrow-left"></i> 👤 Izq.
-            </button>
-            <button class="btn" onclick="setPersonSide('right')" style="margin:0; padding:10px;">
-                👤 Der. <i class="fas fa-arrow-right"></i>
-            </button>
-        </div>
-    </div>
-
-    <button class="btn btn-primary" onclick="exportPost()">
-        <i class="fab fa-instagram"></i> Share & Download
-    </button>
-</div>
-
-<div class="preview-wrapper">
-    <div id="post-canvas" class="layout-classic text-left">
-        <img id="logo-img" class="logo" src="" style="display:none;">
-        <img id="person-img" class="person-img" src="" style="display:none;">
-        <div class="text-layer">
-            <div class="headline" contenteditable="true" data-limit="50">
-                Sie verdienen mehr als <span style="color:var(--primary)">100.000 €</span>?
-            </div>
-            <div class="subline" contenteditable="true">
-                Erfahren Sie, wie Sie Ihre Steuerlast legal auf unter 30% senken.
-            </div>
-            <div class="extra-card">
-                <img id="extra-img" src="" style="width:100%; height:auto; display: block;">
-            </div>
-            <div class="cta-badge" contenteditable="true">
-                Kostenlos berechnen ↓
+        <div class="control-group">
+            <label>2. Designvorlage</label>
+            <div class="template-switcher">
+                <button class="t-btn active" onclick="setTemplate('classic')">Classic Dark</button>
+                <button class="t-btn" onclick="setTemplate('modern')">Modern Card</button>
             </div>
         </div>
-    </div>
-</div>
 
-<div id="cropper-modal">
-    <div class="cropper-box">
-        <h3>Bild zuschneiden</h3>
-        <div class="img-container">
-            <img id="cropper-img" style="max-width:100%;">
+        <div class="control-group">
+            <label>3. Foto (Person)</label>
+            <input type="file" id="upload" accept="image/*">
         </div>
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="btn" onclick="closeCropper()" style="background:#ddd;">Abbrechen</button>
-            <button class="btn btn-primary" onclick="applyCrop()">Anwenden</button>
+
+        <div class="control-group">
+            <label>Zusätzliches Bild (Vorlage 2)</label>
+            <input type="file" id="uploadExtra" accept="image/*">
+        </div>
+
+        <div class="control-group">
+            <label>4. Text & Stil</label>
+            <div class="align-toolbar">
+                <button class="align-btn" onclick="setAlignment('left')"><i class="fas fa-align-left"></i></button>
+                <button class="align-btn" onclick="setAlignment('center')"><i class="fas fa-align-center"></i></button>
+                <button class="align-btn" onclick="setAlignment('right')"><i class="fas fa-align-right"></i></button>
+                <button class="align-btn" onmousedown="event.preventDefault(); toggleHighlight()"
+                    title="Resaltar texto seleccionado" style="color: var(--primary); font-weight:bold;">
+                    <i class="fas fa-highlighter"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>5. Position der Person</label>
+            <div style="display:flex; gap:10px;">
+                <button class="btn" onclick="setPersonSide('left')" style="margin:0; padding:10px;">
+                    <i class="fas fa-arrow-left"></i> 👤 links
+                </button>
+                <button class="btn" onclick="setPersonSide('right')" style="margin:0; padding:10px;">
+                    👤 rechts <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>🎨 Markenfarben</label>
+            <div style="display:flex; gap:15px; align-items:center;">
+
+                <div style="flex:1; text-align:center;">
+                    <input type="color" id="color-primary" value="#c41e3a" style="height:40px; cursor:pointer;">
+                    <span style="font-size:10px; color:#666; display:block; margin-top:5px;">Acento (Rojo)</span>
+                </div>
+
+                <div style="flex:1; text-align:center;">
+                    <input type="color" id="color-dark" value="#001a4d" style="height:40px; cursor:pointer;">
+                    <span style="font-size:10px; color:#666; display:block; margin-top:5px;">Base (Azul)</span>
+                </div>
+
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="exportPost()">
+            <i class="fab fa-instagram"></i> Teilen & Herunterladen
+        </button>
+    </div>
+
+    <div class="preview-wrapper">
+        <div id="post-canvas" class="layout-classic text-left">
+            <img id="logo-img" class="logo" src="" style="display:none;">
+            <img id="person-img" class="person-img" src="" style="display:none;">
+            <div class="text-layer">
+                <div class="headline" contenteditable="true" data-limit="50">
+                    Sie verdienen mehr als <span style="color:var(--primary)">100.000 €</span>?
+                </div>
+                <div class="subline" contenteditable="true">
+                    Erfahren Sie, wie Sie Ihre Steuerlast legal auf unter 30% senken.
+                </div>
+                <div class="extra-card">
+                    <img id="extra-img" src="" style="width:100%; height:auto; display: block;">
+                </div>
+                <div class="cta-badge" contenteditable="true">
+                    Kostenlos berechnen ↓
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <div id="cropper-modal">
+        <div class="cropper-box">
+            <h3>Bild zuschneiden</h3>
+            <div class="img-container">
+                <img id="cropper-img" style="max-width:100%;">
+            </div>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn" onclick="closeCropper()" style="background:#ddd;">Abbrechen</button>
+                <button class="btn btn-primary" onclick="applyCrop()">Anwenden</button>
+            </div>
+        </div>
+    </div>
 
-<script>
-    // --- VARIABLES GLOBALES ---
-    let cropper;
-    let originalLogoUrl = ""; // Guarda la URL del logo rojo original
-    let whiteLogoCache = "";  // Guarda la versión blanca generada
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    const canvas = document.getElementById('post-canvas');
-    const upload = document.getElementById('upload');
-    const modal = document.getElementById('cropper-modal');
-    const cropperImg = document.getElementById('cropper-img');
-    const finalImg = document.getElementById('person-img');
-    
-    const uploadExtra = document.getElementById('uploadExtra');
-    const extraImg = document.getElementById('extra-img');
-    
-    // Logo variables
-    const uploadLogo = document.getElementById('upload-logo');
-    const logoImg = document.getElementById('logo-img');
-    const logoPreviewBtn = document.getElementById('logo-preview-btn');
+    <script>
+        // --- global variable ---
+        let cropper;
+        let originalLogoUrl = ""; // url red ver
+        let whiteLogoCache = "";  // url white ver
 
-    // --- 1. LOGIC: UPLOAD LOGO ---
-    if(uploadLogo) {
-        uploadLogo.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const url = URL.createObjectURL(file);
-                
-                // 1. Guardar original
-                originalLogoUrl = url;
-                whiteLogoCache = ""; // Limpiar caché anterior
-                
-                // 2. Actualizar visuales
-                logoPreviewBtn.src = url;
-                logoImg.style.display = 'block';
-                
-                // 3. Aplicar color según template actual
-                updateLogoColor();
-            }
-        });
-    }
+        const canvas = document.getElementById('post-canvas');
+        const upload = document.getElementById('upload');
+        const modal = document.getElementById('cropper-modal');
+        const cropperImg = document.getElementById('cropper-img');
+        const finalImg = document.getElementById('person-img');
 
-    // --- FUNCIÓN MÁGICA: PINTAR LOGO DE BLANCO ---
-    function updateLogoColor() {
-        if (!originalLogoUrl) return;
+        const uploadExtra = document.getElementById('uploadExtra');
+        const extraImg = document.getElementById('extra-img');
 
-        // Si es Classic -> Queremos logo BLANCO
-        if (canvas.classList.contains('layout-classic')) {
-            if (whiteLogoCache) {
-                logoImg.src = whiteLogoCache;
-            } else {
-                createWhiteLogo(originalLogoUrl, (whiteUrl) => {
-                    whiteLogoCache = whiteUrl;
-                    logoImg.src = whiteUrl;
-                });
-            }
-        } 
-        // Si es Modern -> Queremos logo ORIGINAL
-        else {
-            logoImg.src = originalLogoUrl;
-        }
-    }
+        // variables logo
+        const uploadLogo = document.getElementById('upload-logo');
+        const logoImg = document.getElementById('logo-img');
+        const logoPreviewBtn = document.getElementById('logo-preview-btn');
 
-    function createWhiteLogo(url, callback) {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.src = url;
-        img.onload = () => {
-            const c = document.createElement('canvas');
-            c.width = img.width;
-            c.height = img.height;
-            const ctx = c.getContext('2d');
-            
-            // Dibujar original
-            ctx.drawImage(img, 0, 0);
-            
-            // Pintar de blanco manteniendo transparencia
-            ctx.globalCompositeOperation = 'source-in';
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, c.width, c.height);
-            
-            callback(c.toDataURL('image/png'));
-        };
-    }
+        // --- 1. LOGIC: UPLOAD LOGO ---
+        if (uploadLogo) {
+            uploadLogo.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const url = URL.createObjectURL(file);
 
-    // --- 2. LOGIC: PERSON UPLOAD & CROP ---
-    upload.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                cropperImg.src = evt.target.result;
-                modal.style.display = 'flex';
-                if (cropper) cropper.destroy();
-                cropper = new Cropper(cropperImg, { aspectRatio: NaN, viewMode: 1 });
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+                    // 1. save original
+                    originalLogoUrl = url;
+                    whiteLogoCache = ""; // clean past cache
 
-    function applyCrop() {
-        if(!cropper) return;
-        const croppedCanvas = cropper.getCroppedCanvas({ width: 800 });
-        finalImg.src = croppedCanvas.toDataURL();
-        finalImg.style.display = 'block';
-        modal.style.display = 'none';
-    }
+                    // 2. update visuals
+                    logoPreviewBtn.src = url;
+                    logoImg.style.display = 'block';
 
-    function closeCropper() {
-        modal.style.display = 'none';
-        upload.value = ''; 
-    }
-
-    // --- 3. LOGIC: EXTRA IMAGE ---
-    if (uploadExtra) {
-        uploadExtra.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                extraImg.src = URL.createObjectURL(file);
-                extraImg.style.display = 'block';
-            }
-        });
-    }
-
-    // --- 4. LOGIC: TEMPLATES ---
-    function setTemplate(type) {
-        canvas.classList.remove('layout-classic', 'layout-modern');
-        document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-
-        if (type === 'classic') {
-            canvas.classList.add('layout-classic');
-            setAlignment('left');
-        } else {
-            canvas.classList.add('layout-modern');
-            setAlignment('center');
-        }
-        
-        // ¡IMPORTANTE! Actualizar color del logo al cambiar template
-        updateLogoColor();
-    }
-
-    function setAlignment(align) {
-        canvas.classList.remove('text-left', 'text-center', 'text-right');
-        canvas.classList.add('text-' + align);
-        document.querySelectorAll('.align-btn').forEach(b => b.classList.remove('active'));
-        const iconClass = 'fa-align-' + align;
-        const btnIcon = document.querySelector(`.${iconClass}`);
-        if(btnIcon) btnIcon.parentElement.classList.add('active');
-    }
-
-    function setPersonSide(side) {
-        canvas.classList.remove('side-left', 'side-right');
-        canvas.classList.add('side-' + side);
-        if(side === 'left') {
-            setAlignment('right');
-        } else {
-            setAlignment('left');
-        }
-    }
-
-    // --- 5. LOGIC: TEXT & EXPORT ---
-    document.querySelectorAll('[contenteditable]').forEach(el => {
-        el.addEventListener('input', function () {
-            const limit = this.getAttribute('data-limit');
-            if (limit && this.innerText.length > limit) this.classList.add('limit-reached');
-            else this.classList.remove('limit-reached');
-        });
-    });
-
-    function toggleHighlight() {
-        const selection = window.getSelection();
-        if (!selection.rangeCount) return;
-        const range = selection.getRangeAt(0);
-        const span = document.createElement('span');
-        span.style.color = 'var(--primary)';
-        try { range.surroundContents(span); } catch (e) {}
-    }
-
-    async function exportPost() {
-        const btn = document.querySelector('.btn-primary');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rendering...';
-        btn.disabled = true;
-
-        try {
-            const canvasEl = await html2canvas(canvas, {
-                scale: 3,
-                useCORS: true, 
-                allowTaint: false,
-                backgroundColor: null
-            });
-
-            canvasEl.toBlob(async (blob) => {
-                if(!blob) throw new Error("Canvas empty");
-                const file = new File([blob], `PSK-Post-${Date.now()}.png`, { type: "image/png" });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try { await navigator.share({ files: [file] }); } catch (e) {} finally { downloadBlob(blob); }
-                } else {
-                    downloadBlob(blob);
+                    // 3. Apply color according actual var
+                    updateLogoColor();
                 }
+            });
+        }
+
+        // --- paint logo ---
+        function updateLogoColor() {
+            if (!originalLogoUrl) return;
+
+            // if Classic template -> white logo
+            if (canvas.classList.contains('layout-classic')) {
+                if (whiteLogoCache) {
+                    logoImg.src = whiteLogoCache;
+                } else {
+                    createWhiteLogo(originalLogoUrl, (whiteUrl) => {
+                        whiteLogoCache = whiteUrl;
+                        logoImg.src = whiteUrl;
+                    });
+                }
+            }
+            // if Modern template ->  ORIGINAL logo
+            else {
+                logoImg.src = originalLogoUrl;
+            }
+        }
+
+        function createWhiteLogo(url, callback) {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = url;
+            img.onload = () => {
+                const c = document.createElement('canvas');
+                c.width = img.width;
+                c.height = img.height;
+                const ctx = c.getContext('2d');
+
+                // draw original
+                ctx.drawImage(img, 0, 0);
+
+                // paint white logo with transparency
+                ctx.globalCompositeOperation = 'source-in';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, c.width, c.height);
+
+                callback(c.toDataURL('image/png'));
+            };
+        }
+
+        // --- 2. LOGIC: PERSON UPLOAD & CROP ---
+        upload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    cropperImg.src = evt.target.result;
+                    modal.style.display = 'flex';
+                    if (cropper) cropper.destroy();
+                    cropper = new Cropper(cropperImg, { aspectRatio: NaN, viewMode: 1 });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function applyCrop() {
+            if (!cropper) return;
+            const croppedCanvas = cropper.getCroppedCanvas({ width: 800 });
+            finalImg.src = croppedCanvas.toDataURL();
+            finalImg.style.display = 'block';
+            modal.style.display = 'none';
+        }
+
+        function closeCropper() {
+            modal.style.display = 'none';
+            upload.value = '';
+        }
+
+        // --- 3. LOGIC: EXTRA IMAGE ---
+        if (uploadExtra) {
+            uploadExtra.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    extraImg.src = URL.createObjectURL(file);
+                    extraImg.style.display = 'block';
+                }
+            });
+        }
+
+        // --- 4. LOGIC: TEMPLATES ---
+        function setTemplate(type) {
+            canvas.classList.remove('layout-classic', 'layout-modern');
+            document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (type === 'classic') {
+                canvas.classList.add('layout-classic');
+                setAlignment('left');
+            } else {
+                canvas.classList.add('layout-modern');
+                setAlignment('center');
+            }
+
+            // update logo color when changing template
+            updateLogoColor();
+        }
+
+        function setAlignment(align) {
+            canvas.classList.remove('text-left', 'text-center', 'text-right');
+            canvas.classList.add('text-' + align);
+            document.querySelectorAll('.align-btn').forEach(b => b.classList.remove('active'));
+            const iconClass = 'fa-align-' + align;
+            const btnIcon = document.querySelector(`.${iconClass}`);
+            if (btnIcon) btnIcon.parentElement.classList.add('active');
+        }
+
+        function setPersonSide(side) {
+            canvas.classList.remove('side-left', 'side-right');
+            canvas.classList.add('side-' + side);
+            if (side === 'left') {
+                setAlignment('right');
+            } else {
+                setAlignment('left');
+            }
+        }
+
+
+        /*color change*/
+       
+        const colorPrimary = document.getElementById('color-primary');
+        const colorDark = document.getElementById('color-dark');
+
+        // listen changes on primary color
+        if (colorPrimary) {
+            colorPrimary.addEventListener('input', (e) => {
+                // update css var globally
+                document.documentElement.style.setProperty('--primary', e.target.value);
+            });
+        }
+
+        // Listen for changes in the BASE color (Dark blue by default)
+        if (colorDark) {
+            colorDark.addEventListener('input', (e) => {
+                document.documentElement.style.setProperty('--dark', e.target.value);
+            });
+        }
+
+        // --- 5. LOGIC: TEXT & EXPORT ---
+        document.querySelectorAll('[contenteditable]').forEach(el => {
+            el.addEventListener('input', function () {
+                const limit = this.getAttribute('data-limit');
+                if (limit && this.innerText.length > limit) this.classList.add('limit-reached');
+                else this.classList.remove('limit-reached');
+            });
+        });
+
+        function toggleHighlight() {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            const range = selection.getRangeAt(0);
+            const span = document.createElement('span');
+            span.style.color = 'var(--primary)';
+            try { range.surroundContents(span); } catch (e) { }
+        }
+
+        async function exportPost() {
+            const btn = document.querySelector('.btn-primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rendering...';
+            btn.disabled = true;
+
+            try {
+                const canvasEl = await html2canvas(canvas, {
+                    scale: 3,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: null
+                });
+
+                canvasEl.toBlob(async (blob) => {
+                    if (!blob) throw new Error("Canvas empty");
+                    const file = new File([blob], `PSK-Post-${Date.now()}.png`, { type: "image/png" });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try { await navigator.share({ files: [file] }); } catch (e) { } finally { downloadBlob(blob); }
+                    } else {
+                        downloadBlob(blob);
+                    }
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 'image/png');
+            } catch (err) {
+                alert("Error: " + err.message);
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-            }, 'image/png');
-        } catch (err) {
-            alert("Error: " + err.message);
-            btn.innerHTML = originalText;
-            btn.disabled = false;
+            }
         }
-    }
 
-    function downloadBlob(blob) {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `PSK-Post-${Date.now()}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }
+        function downloadBlob(blob) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `PSK-Post-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
 
-    // Init
-    setPersonSide('right');
-</script>
+        // Init
+        setPersonSide('right');
+    </script>
 </body>
+
 </html>
