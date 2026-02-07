@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSK Instagram Post Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #c41e3a;
+            --dark: #001a4d;
+            --light: #ffffff;
+            --gray: #f4f4f4;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: #eef2f6;
+            display: flex;
+            padding: 40px;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* controls dashboard */
+        .controls {
+            width: 380px;
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            height: fit-content;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-top: 0;
+            color: var(--dark);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            border-bottom: none;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+
+        }
+
+        /*template switcher*/
+
+        .template-switcher {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .t-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+            transition: 0.2s;
+        }
+
+        .t-btn.active {
+            border-color: var(--dark);
+            background: var(--dark);
+            color: white;
+        }
+
+        /*alignment btns*/
+
+        .align-toolbar {
+            display: flex;
+            background: #f0f2f5;
+            border-radius: 8px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .align-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .align-btn:hover {
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            color: var(--dark);
+        }
+
+        /*inputs*/
+
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #a01830;
+        }
+
+        /*PREVIEW AREA*/
+
+        .preview-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #post-canvas {
+            width: 432px;
+            height: 540px;
+            /*ratio scaled down*/
+            background: var(--dark);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            color: white;
+            transition: ease .3s;
+        }
+
+        /* LAYOUTS */
+
+        /* common elements*/
+        .person-img {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 85%;
+            height: auto;
+            pointer-events: none;
+        }
+
+        .text-layer {
+            position: absolute;
+            z-index: 10;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 40px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* editable text styles*/
+
+        [contenteditable]:focus {
+            outline: 2px dashed rgba(255, 255, 255, 0.5);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        [contenteditable].limit-reached {
+            outline: 2px dashed red;
+            background: rgba(255, 0, 0, 0.2);
+        }
+
+        /* Base Logo Style */
+        .logo {
+            position: absolute;
+            z-index: 20;
+            /* Ensures it stays on top */
+            width: 200px;
+            /* Standard width */
+            height: auto;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            /* Smooth movement */
+        }
+
+        /* --- STYLE 1: CLASSIC (Dark Theme) --- */
+        /* Needs to be White and Left-Aligned */
+        .layout-classic .logo {
+            top: 40px;
+            left: 30px;
+            filter: brightness(0) invert(1);
+            opacity: 0.95;
+        }
+
+        /* --- STYLE 2: MODERN (Light Theme) --- */
+        /* Needs to be Centered inside a White Box */
+        .layout-modern .logo {
+            left: 50%;
+            transform: translateX(-50%);
+            top: 0;
+
+            /* The "Pill" Box Look */
+            background: white;
+            padding: 12px 25px;
+            border-radius: 0 0 16px 16px;
+            /* Round only bottom corners */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            /* Soft shadow */
+            width: 180px;
+            /* Slightly smaller to fit the box nicely */
+        }
+
+        .headline {
+            font-size: 38px;
+            font-weight: 800;
+            line-height: 1.25;
+            margin-bottom: 10px;
+        }
+
+        .headline span {
+            color: var(--primary);
+            background: white;
+            padding: 2px 8px;
+        }
+
+        /* highlight style*/
+        .subline {
+            font-size: 20px;
+            opacity: 0.9;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+
+        .cta-badge {
+            background: var(--primary);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            width: fit-content;
+            font-size: 14px;
+            margin-top: auto;
+        }
+
+        /* template 1 classic*/
+        .layout-classic {
+            background: linear-gradient(135deg, #001a4d 0%, #001233 100%);
+        }
+
+        .layout-classic .text-layer {
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .layout-classic .headline {
+            max-width: 70%;
+            margin-top: 40px;
+        }
+
+        .layout-classic .extra-card {
+            display: none;
+            /*hide card in templ 1*/
+        }
+
+        /* TEMPLATE 2*/
+        .layout-modern {
+            background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+            color: #333;
+        }
+
+        .layout-modern .headline {
+            color: white;
+            font-size: 32px;
+            margin-top: 80px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .layout-modern .subline {
+            color: #555;
+            text-align: center;
+            width: 100%;
+            display: none;
+        }
+
+        .layout-modern .cta-badge {
+            margin: 0 auto 20px auto;
+            order: 5;
+        }
+
+        /*move cta to bottom*/
+
+
+        /*img extra only for templ 2*/
+        .extra-card {
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 260px;
+            top: 140px;
+            left: 30px;
+            z-index: 5;
+            transform: scale(0.9);
+            transform-origin: top left;
+        }
+
+        .card-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+
+        .card-label {
+            font-size: 10px;
+            color: #888;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .card-val {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--dark);
+        }
+
+        .card-highlight {
+            background: #e6f4ea;
+            color: #1e7e34;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        /*alignment utilities*/
+        .text-left .headline,
+        .text-left .subline {
+            text-align: left;
+        }
+
+        .text-center .headline,
+        .text-center .subline {
+            text-align: center;
+        }
+
+        .text-right .headline,
+        .text-right .subline {
+            text-align: right;
+            margin-left: auto;
+        }
+
+        /*modal*/
+        #cropper-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cropper-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 90%;
+            width: 500px;
+        }
+
+        .img-container {
+            height: 350px;
+            background: #333;
+            overflow: hidden;
+        }
+
+        /* --- CONFIGURACIÓN BASE DE LA PERSONA --- */
+.person-img {
+    position: absolute;
+    bottom: 0;
+    width: 80%;       /* Tamaño grande */
+    max-width: 400px;
+    z-index: 1;       /* Detrás del texto interactivo, pero visible */
+    transition: all 0.4s ease-out; /* Animación suave al moverse */
+}
+
+/* --- ESCENARIO A: PERSONA A LA DERECHA (Default) --- */
+.side-right .person-img {
+    right: -10%;      /* Se asoma desde la derecha */
+    left: auto;
+    transform: scaleX(1); /* Imagen normal */
+}
+/* El texto se "protege" dejando espacio a la derecha */
+.side-right .text-layer {
+    padding-right: 40% !important; /* Deja el 40% del espacio libre para la foto */
+    padding-left: 40px;
+    text-align: left; /* Sugerencia visual */
+}
+
+/* --- ESCENARIO B: PERSONA A LA IZQUIERDA --- */
+.side-left .person-img {
+    left: -10%;       /* Se asoma desde la izquierda */
+    right: auto;
+    transform: scaleX(-1); /* 🪄 ESPEJO: Volteamos la imagen para que mire al centro */
+}
+/* El texto se "protege" dejando espacio a la izquierda */
+.side-left .text-layer {
+    padding-left: 45% !important; /* Deja espacio a la izquierda */
+    padding-right: 40px;
+    text-align: right; /* Sugerencia visual */
+}
+/* --- CORRECCIÓN PARA LAYOUT CLASSIC --- */
+
+/* 1. Texto más pequeño SOLO si la persona está ocupando espacio */
+.layout-classic.side-left .headline,
+.layout-classic.side-right .headline {
+    font-size: 26px; /* Bajamos de 38px a 26px para que quepa en la columna */
+    margin-top: 60px; /* Ajuste para que no pegue arriba */
+}
+
+/* 2. Evitar que el precio "100.000 €" se parta en dos líneas */
+.headline span {
+    display: inline-block; /* Mantiene la caja unida */
+    white-space: nowrap;   /* Prohíbe partir la línea dentro del precio */
+    font-size: 0.9em;      /* Un pelín más pequeño para asegurar que entre */
+}
+
+/* 3. Ajuste de márgenes para que el botón no se salga por abajo */
+.layout-classic.side-left .subline,
+.layout-classic.side-right .subline {
+    font-size: 16px;       /* Subtítulo un poco más pequeño */
+    margin-bottom: 15px;   /* Menos espacio antes del botón */
+}
+
+/* 4. Ajustar el padding para dar un poco más de aire al texto */
+.layout-classic.side-left .text-layer {
+    padding-left: 45% !important; /* Espacio para la foto a la izq */
+    padding-right: 20px;          /* Margen derecho seguro */
+}
+
+.layout-classic.side-right .text-layer {
+    padding-right: 45% !important; /* Espacio para la foto a la der */
+    padding-left: 20px;            /* Margen izquierdo seguro */
+}
+    </style>
+</head>
+
+<div class="controls">
+    <div style="display:flex; flex-flow: column; align-items:center; gap:10px; margin-bottom:20px;">
+        <h2>Post Generator</h2>
+    </div>
+
+    <div class="control-group">
+        <label>1. Design Template</label>
+        <div class="template-switcher">
+            <button class="t-btn active" onclick="setTemplate('classic')">Classic Dark</button>
+            <button class="t-btn" onclick="setTemplate('modern')">Modern Card</button>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label>2. Foto (Person)</label>
+        <input type="file" id="upload" accept="image/*">
+    </div>
+
+    <div class="control-group">
+        <label>Aditional Img(Template 2)</label>
+        <input type="file" id="uploadExtra" accept="image/*">
+    </div>
+    <div class="control-group">
+        <label>3. Texto y Estilo</label>
+        <div class="align-toolbar">
+            <button class="align-btn" onclick="setAlignment('left')"><i class="fas fa-align-left"></i></button>
+            <button class="align-btn" onclick="setAlignment('center')"><i class="fas fa-align-center"></i></button>
+            <button class="align-btn" onclick="setAlignment('right')"><i class="fas fa-align-right"></i></button>
+
+            <button class="align-btn" onmousedown="event.preventDefault(); toggleHighlight()"
+                title="Resaltar texto seleccionado" style="color: var(--primary); font-weight:bold;">
+                <i class="fas fa-highlighter"></i>
+            </button>
+        </div>
+    </div>
+    <div class="control-group">
+        <label>4. Posición de Persona</label>
+        <div style="display:flex; gap:10px;">
+            <button class="btn" onclick="setPersonSide('left')" style="margin:0; padding:10px;">
+                <i class="fas fa-arrow-left"></i> 👤 Izq.
+            </button>
+            <button class="btn" onclick="setPersonSide('right')" style="margin:0; padding:10px;">
+                👤 Der. <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+
+
+    <button class="btn btn-primary" onclick="exportPost()">
+        <i class="fab fa-instagram"></i> Share & Download
+    </button>
+    <p style="font-size:12px; color:#999; text-align:center; margin-top:10px;">
+        ℹ️ Text, Zahlen und Farben sind direkt im Bild bearbeitbar.
+    </p>
+</div>
+
+<div class="preview-wrapper">
+    <div id="post-canvas" class="layout-classic text-left">
+        <img src="./logo.png" class="logo" alt="">
+        <img id="person-img" class="person-img" src="" style="display:none;">
+        <div class="text-layer">
+            <div class="headline" contenteditable="true" data-limit="50">
+                Sie verdienen mehr als <span style="color:var(--primary)">100.000 €</span>?
+            </div>
+
+            <div class="subline" contenteditable="true">
+                Erfahren Sie, wie Sie Ihre Steuerlast legal auf unter 30% senken.
+            </div>
+            <div class="extra-card">
+                <img id="extra-img" src="" style="width:100%; height:auto; display: block;">
+            </div>
+            <div class="cta-badge" contenteditable="true">
+                Kostenlos berechnen ↓
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="cropper-modal">
+    <div class="cropper-box">
+        <h3>Bild zuschneiden</h3>
+        <div class="img-container">
+            <img id="cropper-img" style="max-width:100%;">
+        </div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button class="btn" onclick="closeCropper()" style="background:#ddd;">Abbrechen</button>
+            <button class="btn btn-primary" onclick="applyCrop()">Anwenden</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // --- VARIABLES GLOBALES ---
+    let cropper;
+    const canvas = document.getElementById('post-canvas');
+    const upload = document.getElementById('upload');
+    const modal = document.getElementById('cropper-modal');
+    const cropperImg = document.getElementById('cropper-img');
+    const finalImg = document.getElementById('person-img');
+    
+    // CORRECCIÓN: Definir estas variables que faltaban
+    const uploadExtra = document.getElementById('uploadExtra'); // Faltaba definir esto
+    const extraImg = document.getElementById('extra-img');
+    
+    // NUEVO: Variables para el logo
+    const uploadLogo = document.getElementById('upload-logo');
+    const logoImg = document.getElementById('logo-img');
+    const logoPreviewBtn = document.getElementById('logo-preview-btn');
+
+    // --- 1. LOGIC: UPLOAD LOGO (Fixes Security Error) ---
+    if(uploadLogo) {
+        uploadLogo.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                // Actualiza el logo en el canvas
+                logoImg.src = url;
+                logoImg.style.display = 'block';
+                // Actualiza la miniatura en el panel de control
+                logoPreviewBtn.src = url;
+                logoPreviewBtn.style.border = 'none';
+            }
+        });
+    }
+
+    // --- 2. LOGIC: PERSON UPLOAD & CROP ---
+    upload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                cropperImg.src = evt.target.result;
+                modal.style.display = 'flex';
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(cropperImg, { aspectRatio: NaN, viewMode: 1 });
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function applyCrop() {
+        if(!cropper) return;
+        const croppedCanvas = cropper.getCroppedCanvas({ width: 800 });
+        finalImg.src = croppedCanvas.toDataURL();
+        finalImg.style.display = 'block';
+        modal.style.display = 'none';
+    }
+
+    function closeCropper() {
+        modal.style.display = 'none';
+        upload.value = ''; 
+    }
+
+    // --- 3. LOGIC: EXTRA IMAGE (TEMPLATE 2) ---
+    // CORRECCIÓN: Ahora verificamos si existe uploadExtra antes de usarlo
+    if (uploadExtra) {
+        uploadExtra.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                extraImg.src = URL.createObjectURL(file);
+                extraImg.style.display = 'block';
+            }
+        });
+    }
+
+    // --- 4. LOGIC: TEMPLATES & LAYOUT ---
+    function setTemplate(type) {
+        canvas.classList.remove('layout-classic', 'layout-modern');
+        document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+
+        if (type === 'classic') {
+            canvas.classList.add('layout-classic');
+            setAlignment('left');
+        } else {
+            canvas.classList.add('layout-modern');
+            setAlignment('center');
+        }
+    }
+
+    function setAlignment(align) {
+        canvas.classList.remove('text-left', 'text-center', 'text-right');
+        canvas.classList.add('text-' + align);
+        document.querySelectorAll('.align-btn').forEach(b => b.classList.remove('active'));
+        const iconClass = 'fa-align-' + align;
+        const btnIcon = document.querySelector(`.${iconClass}`);
+        if(btnIcon) btnIcon.parentElement.classList.add('active');
+    }
+
+    function setPersonSide(side) {
+        canvas.classList.remove('side-left', 'side-right');
+        canvas.classList.add('side-' + side);
+        if(side === 'left') {
+            setAlignment('right');
+        } else {
+            setAlignment('left');
+        }
+    }
+
+    // --- 5. LOGIC: TEXT TOOLS ---
+    document.querySelectorAll('[contenteditable]').forEach(el => {
+        el.addEventListener('input', function () {
+            const limit = this.getAttribute('data-limit');
+            if (limit && this.innerText.length > limit) {
+                this.classList.add('limit-reached');
+            } else {
+                this.classList.remove('limit-reached');
+            }
+        });
+    });
+
+    function toggleHighlight() {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+        const range = selection.getRangeAt(0);
+        const parent = range.commonAncestorContainer.nodeType === 1
+            ? range.commonAncestorContainer
+            : range.commonAncestorContainer.parentElement;
+
+        if (!parent.closest('.headline')) {
+            alert("⚠️ Solo puedes resaltar texto en el título.");
+            return;
+        }
+
+        const span = document.createElement('span');
+        span.style.color = 'var(--primary)';
+        try {
+            range.surroundContents(span);
+        } catch (e) {
+            alert("Selecciona un texto limpio (sin mezclar estilos).");
+        }
+    }
+
+    // --- 6. LOGIC: EXPORT ---
+    async function exportPost() {
+        const btn = document.querySelector('.btn-primary');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rendering...';
+        btn.disabled = true;
+
+        try {
+            // Importante: useCORS y allowTaint settings
+            const canvasEl = await html2canvas(canvas, {
+                scale: 3,
+                useCORS: true, 
+                allowTaint: false, // Esto evita el error de seguridad si la imagen es válida
+                backgroundColor: null
+            });
+
+            canvasEl.toBlob(async (blob) => {
+                if(!blob) throw new Error("Canvas is empty");
+                
+                const file = new File([blob], `Insta-Post-${Date.now()}.png`, { type: "image/png" });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'New Post',
+                            text: 'Created with PSK Generator'
+                        });
+                    } catch (err) {
+                        if (err.name !== 'AbortError') console.error(err);
+                    } finally {
+                        downloadBlob(blob);
+                    }
+                } else {
+                    downloadBlob(blob);
+                }
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 'image/png');
+
+        } catch (err) {
+            alert("Error: " + err.message);
+            console.error(err);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    function downloadBlob(blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `PSK-Post-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    // Init
+    setPersonSide('right');
+</script>
+</body>
+
+</html>
